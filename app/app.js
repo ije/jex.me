@@ -107,20 +107,20 @@ function main() {
   }
 
   const pixelShaderHeader = `
-  #ifdef GL_ES
-    precision highp float;
-    precision highp int;
-  #endif
-  uniform vec3 iResolution;
-  uniform vec4 iMouse;
-  uniform vec3 iScroll;
-  uniform float iTime;
-`
+    #ifdef GL_ES
+      precision highp float;
+      precision highp int;
+    #endif
+    uniform vec3 iResolution;
+    uniform vec4 iMouse;
+    uniform vec3 iScroll;
+    uniform float iTime;
+  `
 
   function initShaderProgram(gl, pixelShaderSource) {
     const shaderProgram = gl.createProgram()
     const vertexShader = compileShader(gl, gl.VERTEX_SHADER, "attribute vec2 pos;void main(){gl_Position=vec4(pos.xy,0.,1.);}")
-    const fragmentShader = compileShader(gl, gl.FRAGMENT_SHADER, pixelShaderHeader + pixelShaderSource)
+    const fragmentShader = compileShader(gl, gl.FRAGMENT_SHADER, `${pixelShaderHeader}${pixelShaderSource}`)
 
     gl.attachShader(shaderProgram, vertexShader)
     gl.attachShader(shaderProgram, fragmentShader)
