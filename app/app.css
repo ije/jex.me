@@ -15,28 +15,51 @@ html, body {
   overflow: hidden;
 }
 
-body {
+.loading,
+.error {
+  margin-left: 5vw;
+  margin-top: 5vh;
+  width: 90vw;
+  height: 90vh;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-family: 'BB Roller Mono Pro CR', 'Dank Mono', 'Source Code Pro', 'Courier New', Courier, monospace;
 }
 
 .loading {
-  color: #aaa;
+  color: #ccc;
   font-size: 12px;
-  font-family: 'Dank Mono', 'Source Code Pro', Monaco, monospace;
+  font-weight: 500;
 }
 
 .error {
-  max-width: 90%;
   line-height: 2;
   font-size: 16px;
   font-weight: 800;
-  font-family: 'Dank Mono', 'Source Code Pro', Monaco, monospace;
   color: rgba(250, 0, 0, 1);
 }
+
 .error pre {
   line-height: 1.5;
   font-size: 14px;
   font-weight: 500;
+}
+
+canvas {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+.fps {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  font-family: 'BB Roller Mono Pro CR', 'Dank Mono', 'Source Code Pro', 'Courier New', Courier, monospace;
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+  mix-blend-mode: difference;
+  opacity: 0.5;
 }
