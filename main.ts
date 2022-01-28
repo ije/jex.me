@@ -1,25 +1,7 @@
-import { serve, getContentType, getRelativePath, util } from "./deps.ts"
+import { serve } from "./deps.ts"
+import { wathcFs, watchListeners, getContentType } from "./util.ts"
 
 const DEPLOY = Deno.env.get("DENO_DEPLOYMENT_ID")
-
-const watchListeners: Set<(path: string) => void> = new Set()
-const wathcFs = async () => {
-  const w = Deno.watchFs(".", { recursive: true })
-  for await (const { kind, paths } of w) {
-    if (kind === "modify") {
-      const path = getRelativePath(Deno.cwd(), paths[0])
-      if (path !== "main.ts" && !path.startsWith(".")) {
-        util.debounceById(path, () => {
-          watchListeners.forEach(listener => listener(`./${path}`))
-        }, 50)
-      }
-    }
-  }
-}
-
-if (!DEPLOY) {
-  wathcFs()
-}
 
 async function handler(req: Request): Promise<Response> {
   const url = new URL(req.url)
@@ -44,19 +26,19 @@ async function handler(req: Request): Promise<Response> {
       })
       return response
     default:
-      const filepath = `./${url.pathname.slice(1) || "index.html"}`
+      const filepath = `./app/${url.pathname.slice(1) || "index.html"}`
       try {
-        if (filepath === "./index.html") {
+        if (filepath === "./app/index.html") {
           let indexHtml = await Deno.readTextFile(filepath)
           if (DEPLOY) {
-            indexHtml = indexHtml.replace("</head>", `  <script>DEPLOY='${DEPLOY}'</script>\n</head>`)
+            indexHtml = indexHtml.replace("</head>", `  <script>DEPLOY="${DEPLOY}"</script>\n</head>`)
             indexHtml = indexHtml.replace(/\.(js|css)"/g, `.$1?v=${DEPLOY}"`)
           } else {
             indexHtml = indexHtml.replace("</head>", "  <script>IS_DEV=true</script>\n</head>")
           }
           return new Response(indexHtml, {
             headers: {
-              "Content-Type": "text/html charset=utf-8",
+              "Content-Type": getContentType(filepath),
               "Cache-Control": "public, max-age=0, must-revalidate",
             }
           })
@@ -75,6 +57,11 @@ async function handler(req: Request): Promise<Response> {
         return new Response("Internal Server Error", { status: 500 })
       }
   }
+}
+
+if (!DEPLOY) {
+  console.log("Starting dev server...")
+  wathcFs()
 }
 
 console.log("Listening on http://localhost:8000")
