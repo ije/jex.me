@@ -8,7 +8,6 @@ const mimeTypes: Record<string, string> = {
   ".jpg": "image/jpeg",
   ".png": "image/png",
 }
-
 export const getContentType = (path: string): string => {
   const ext = extname(path)
   return mimeTypes[ext] || "application/octet-stream"
@@ -24,7 +23,6 @@ const debounceById = (id: string, callback: () => void, delay: number) => {
     callback()
   }, delay))
 }
-
 
 export const watchListeners: Set<(path: string) => void> = new Set()
 export const wathcFs = async () => {
