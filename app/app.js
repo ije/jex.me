@@ -1,5 +1,6 @@
 window.addEventListener("load", () => {
   document.body.innerHTML = `<div class="loading">Loading...</div>`
+
   fetchShader("world").then(pixelShaderSource => {
     const canvas = document.createElement("canvas")
 
@@ -54,7 +55,7 @@ function now() {
 }
 
 function fetchShader(name, force) {
-  const url = [`/${name}.glsl`, force ? Date.now() : window.DEPLOY].filter(Boolean).join("?v=")
+  const url = [`/${name}.glsl`, force ? now() : window.DEPLOY].filter(Boolean).join("?v=")
   return fetch(url).then(res => res.text())
 }
 
