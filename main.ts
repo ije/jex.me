@@ -49,7 +49,7 @@ async function handler(req: Request): Promise<Response> {
         if (filepath === "./index.html") {
           let indexHtml = await Deno.readTextFile(filepath)
           if (DEPLOY) {
-            indexHtml = indexHtml.replace("</head>", "  <script>DEPLOY='${DEPLOY}'</script>\n</head>")
+            indexHtml = indexHtml.replace("</head>", `  <script>DEPLOY='${DEPLOY}'</script>\n</head>`)
             indexHtml = indexHtml.replace(/\.(js|css)"/g, `.$1?v=${DEPLOY}"`)
           } else {
             indexHtml = indexHtml.replace("</head>", "  <script>IS_DEV=true</script>\n</head>")

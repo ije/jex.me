@@ -54,7 +54,7 @@ function now() {
 }
 
 function fetchShader(name, force) {
-  const url = [`/${name}.glsl`, force ? Date.now() : window.EPLOY].filter(Boolean).join("?v=")
+  const url = [`/${name}.glsl`, force ? Date.now() : window.DEPLOY].filter(Boolean).join("?v=")
   return fetch(url).then(res => res.text())
 }
 
