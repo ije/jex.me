@@ -1,6 +1,6 @@
 window.addEventListener("load", () => {
   document.body.innerHTML = `<div class="loading">Loading...</div>`
-  fetch("/world.glsl").then(res => res.text()).then(pixelShaderSource => {
+  fetchShader("world").then(pixelShaderSource => {
     const canvas = document.createElement("canvas")
 
     canvas.setAttribute("width", window.innerWidth)
@@ -37,7 +37,7 @@ function hot(gl) {
           window.location.reload()
           break
         case "REDRAW":
-          fetch(`/world.glsl?t=${Date.now()}`).then(res => res.text()).then(pixelShaderSource => {
+          fetchShader("world", true).then(pixelShaderSource => {
             glMain(gl, pixelShaderSource)
           })
       }
@@ -51,6 +51,11 @@ function error(message) {
 
 function now() {
   return window.performance?.now() || Date.now()
+}
+
+function fetchShader(name, force) {
+  const url = [`/${name}.glsl`, force ? Date.now() : window.EPLOY].filter(Boolean).join("?v=")
+  return fetch(url).then(res => res.text())
 }
 
 // Vertex shader program (two-dimensional rectangle with same size as the canvas)

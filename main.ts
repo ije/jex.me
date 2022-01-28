@@ -49,14 +49,24 @@ async function handler(req: Request): Promise<Response> {
         if (filepath === "./index.html") {
           let indexHtml = await Deno.readTextFile(filepath)
           if (DEPLOY) {
-            indexHtml = indexHtml.replace(/\.(js|css)"/g, `.$1?VER=${DEPLOY}"`)
+            indexHtml = indexHtml.replace("</head>", "  <script>DEPLOY='${DEPLOY}'</script>\n</head>")
+            indexHtml = indexHtml.replace(/\.(js|css)"/g, `.$1?v=${DEPLOY}"`)
           } else {
-            indexHtml = indexHtml.replace("<head>", "<head><script>IS_DEV=true</script>")
+            indexHtml = indexHtml.replace("</head>", "  <script>IS_DEV=true</script>\n</head>")
           }
-          return new Response(indexHtml, { headers: { "Content-Type": "text/html charset=utf-8" } })
+          return new Response(indexHtml, {
+            headers: {
+              "Content-Type": "text/html charset=utf-8",
+              "Cache-Control": "public, max-age=0, must-revalidate",
+            }
+          })
         } else {
           const file = await Deno.readFile(filepath)
-          return new Response(file, { headers: { "Content-Type": getContentType(filepath) } })
+          const headers = new Headers({ "Content-Type": getContentType(filepath) })
+          if (url.searchParams.has("v")) {
+            headers.set("Cache-Control", "public, max-age=31536000, immutable")
+          }
+          return new Response(file, { headers })
         }
       } catch (err) {
         if (err instanceof Deno.errors.NotFound) {
