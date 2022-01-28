@@ -1,0 +1,42 @@
+* {
+  margin: 0;
+  padding: 0;
+  border: none;
+  outline: none;
+  font: inherit;
+  font-size: 100%;
+  vertical-align: baseline;
+  background: transparent;
+}
+
+html, body {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading {
+  color: #aaa;
+  font-size: 12px;
+  font-family: 'Dank Mono', 'Source Code Pro', Monaco, monospace;
+}
+
+.error {
+  max-width: 90%;
+  line-height: 2;
+  font-size: 16px;
+  font-weight: 800;
+  font-family: 'Dank Mono', 'Source Code Pro', Monaco, monospace;
+  color: rgba(250, 0, 0, 1);
+}
+.error pre {
+  line-height: 1.5;
+  font-size: 14px;
+  font-weight: 500;
+}
