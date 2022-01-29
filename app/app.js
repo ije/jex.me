@@ -54,8 +54,8 @@ function main() {
       } catch (err) {
         console.error(err)
       }
-    }).catch(() => {
-      error("Could not load the shader source.")
+    }).catch(err => {
+      error(err.message)
     })
   })
 
@@ -108,10 +108,6 @@ function main() {
       precision highp float;
       precision highp int;
     #endif
-    uniform vec3 iResolution;
-    uniform vec4 iMouse;
-    uniform vec3 iScroll;
-    uniform float iTime;
   `
 
   function initShaderProgram(gl, pixelShaderSource) {
@@ -190,7 +186,6 @@ function main() {
   }
 
   function error(message) {
-    console.log(message)
     let div = document.querySelector(".error")
     if (!div) {
       div = document.createElement("div")
@@ -206,7 +201,12 @@ function main() {
 
   function loadShader(name, noCache = false) {
     const url = [`/${name}.glsl`, noCache ? now() : window.DEPLOY].filter(Boolean).join("?v=")
-    return fetch(url).then(res => res.text())
+    return fetch(url).then(res => {
+      if (res.status >= 400) {
+        return Promise.reject(new Error(`<${res.status}> Could not load the shader source.`))
+      }
+      return res.text()
+    })
   }
 }
 
