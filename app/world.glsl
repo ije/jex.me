@@ -14,7 +14,7 @@ vec2 toUV(in vec2 c) {
 }
 
 float sdfSphere(in vec3 p) {
-  return length(p - vec3(0, 0, 1.5)) - 0.5;
+  return length(p - vec3(0, 0, 1)) - 0.5;
 }
 
 // https://www.iquilezles.org/www/articles/normalsSDF/normalsSDF.htm
@@ -53,7 +53,7 @@ vec3 render(in vec2 uv) {
     vec3 light = vec3(2.0 * sin(iTime), 2.0, 2.0 * cos(iTime));
     float dif = clamp(dot(normalize(light - p), n), 0.0, 1.0);
     float amd = 0.5 + 0.5 * dot(n, vec3(0, 1, 0));
-    color = amd * (0.5 + 0.5 * cos(iTime + uv.xyx + vec3(0, 2, 4))) + dif * vec3(1);
+    color = amd * (0.5 + 0.3 * cos(iTime + uv.yxx + vec3(0, 2, 4))) + dif * vec3(1);
   }
   return sqrt(color);
 }
