@@ -17,14 +17,16 @@ html, body {
 
 .loading,
 .error {
-  margin-left: 5vw;
-  margin-top: 5vh;
-  width: 90vw;
-  height: 90vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: 'BB Roller Mono Pro CR', 'Dank Mono', 'Source Code Pro', 'Courier New', Courier, monospace;
+  background-color: rgba(255, 255, 255, 0.9);
 }
 
 .loading {
@@ -34,14 +36,18 @@ html, body {
 }
 
 .error {
-  line-height: 2;
+  line-height: 1.5;
   font-size: 16px;
   font-weight: 800;
   color: rgba(250, 0, 0, 1);
 }
 
+.error .wrapper {
+  max-width: 90%;
+}
+
 .error pre {
-  line-height: 1.5;
+  margin-top: 10px;
   font-size: 14px;
   font-weight: 500;
 }

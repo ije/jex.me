@@ -1,7 +1,7 @@
 function main() {
-  let currentProgram = null
   let iMouse = new Float32Array([-1, -1, 0, 0])
   let iScroll = [0, 0, 0]
+  let currentShaderProgram = null
 
   window.addEventListener("load", () => {
     const { body } = document
@@ -12,7 +12,7 @@ function main() {
 
       canvas.width = window.innerWidth
       canvas.height = window.innerHeight
-      body.removeChild(document.querySelector(".loading"))
+      body.childNodes.forEach(node => node.remove())
       body.appendChild(canvas)
 
       try {
@@ -21,7 +21,7 @@ function main() {
           window.addEventListener("resize", () => {
             canvas.width = window.innerWidth
             canvas.height = window.innerHeight
-            gl.viewport(0, 0, canvas.width, canvas.height)
+            gl.viewport(0, 0, canvas.clientWidth, canvas.clientHeight)
           })
           canvas.addEventListener("mousemove", e => {
             iMouse[0] = e.clientX
@@ -60,9 +60,8 @@ function main() {
   })
 
   function render(gl, pixelShaderSource) {
-    currentProgram = initShaderProgram(gl, pixelShaderSource)
-    if (currentProgram) {
-      draw(gl, currentProgram)
+    if (currentShaderProgram = initShaderProgram(gl, pixelShaderSource)) {
+      draw(gl, currentShaderProgram)
     }
   }
 
@@ -73,6 +72,9 @@ function main() {
     gl.clearColor(0, 0, 0, 0)
     gl.clear(gl.COLOR_BUFFER_BIT)
 
+    // use the shader program before setting uniforms
+    gl.useProgram(shaderProgram)
+
     // Set the vertex coordinates
     const positionBuffer = gl.createBuffer()
     const vertexPosition = gl.getAttribLocation(shaderProgram, "pos")
@@ -81,26 +83,21 @@ function main() {
     gl.vertexAttribPointer(vertexPosition, 2, gl.FLOAT, false, 0, 0)
     gl.enableVertexAttribArray(vertexPosition)
 
-    // use the shader program before setting uniforms
-    gl.useProgram(shaderProgram)
-
     // Set the shader uniforms
-    gl.uniform3f(gl.getUniformLocation(shaderProgram, "iResolution"), window.innerWidth, window.innerHeight, 1)
+    gl.uniform3f(gl.getUniformLocation(shaderProgram, "iResolution"), gl.canvas.clientWidth, gl.canvas.clientHeight, 1)
     gl.uniform4fv(gl.getUniformLocation(shaderProgram, "iMouse"), iMouse)
     gl.uniform3f(gl.getUniformLocation(shaderProgram, "iScroll"), ...iScroll)
     gl.uniform1f(gl.getUniformLocation(shaderProgram, "iTime"), (currentTime - startTime) / 1000)
 
     // draw the rectangle
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
-    gl.disableVertexAttribArray(vertexPosition);
-    gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
     // animate
     requestAnimationFrame(() => {
       if (window.IS_DEV) {
         updateFPS(Math.round(1000 / (now() - currentTime)))
       }
-      if (currentProgram === shaderProgram) {
+      if (currentShaderProgram === shaderProgram) {
         draw(gl, shaderProgram, startTime)
       }
     })
@@ -121,6 +118,10 @@ function main() {
     const shaderProgram = gl.createProgram()
     const vertexShader = compileShader(gl, gl.VERTEX_SHADER, "attribute vec2 pos;void main(){gl_Position=vec4(pos.xy,0.,1.);}")
     const fragmentShader = compileShader(gl, gl.FRAGMENT_SHADER, `${pixelShaderHeader}${pixelShaderSource}`)
+
+    if (!fragmentShader) {
+      return null
+    }
 
     gl.attachShader(shaderProgram, vertexShader)
     gl.attachShader(shaderProgram, fragmentShader)
@@ -162,6 +163,7 @@ function main() {
           break
         case "REDRAW":
           loadShader("world", true).then(pixelShaderSource => {
+            document.querySelector(".error")?.remove()
             render(gl, pixelShaderSource)
           })
       }
@@ -188,7 +190,14 @@ function main() {
   }
 
   function error(message) {
-    document.body.innerHTML = `<div class="error">${message}</div>`
+    console.log(message)
+    let div = document.querySelector(".error")
+    if (!div) {
+      div = document.createElement("div")
+      div.className = "error"
+      document.body.appendChild(div)
+    }
+    div.innerHTML = `<div class="wrapper">${message}</div>`
   }
 
   function now() {
