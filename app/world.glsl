@@ -1,7 +1,4 @@
-#define TMIN 0.1
 #define TMAX 20.0
-#define RAYMARCH_TIME 128
-#define PRECISION .001
 #define AA 3
 
 uniform float iTime;
@@ -13,28 +10,34 @@ vec2 toUV(in vec2 c) {
   return (2.0 * c - iResolution.xy) / min(iResolution.x, iResolution.y);
 }
 
-float sdfSphere(in vec3 p) {
-  return length(p - vec3(0, 0, 1)) - 0.5;
+float sdfSphere(in vec3 p, in float r) {
+  return length(p) - r;
+}
+
+float map(in vec3 p) {
+  float d = sdfSphere(p - vec3(0, 0, 1), 0.5);
+  return d;
 }
 
 // https://www.iquilezles.org/www/articles/normalsSDF/normalsSDF.htm
 vec3 calcNormal(in vec3 p) {
   const float h = 0.0001;
   const vec2 k = vec2(1, -1);
-  return normalize(k.xyy * sdfSphere(p + k.xyy * h) +
-    k.yyx * sdfSphere(p + k.yyx * h) +
-    k.yxy * sdfSphere(p + k.yxy * h) +
-    k.xxx * sdfSphere(p + k.xxx * h));
+  return normalize(k.xyy * map(p + k.xyy * h) +
+    k.yyx * map(p + k.yyx * h) +
+    k.yxy * map(p + k.yxy * h) +
+    k.xxx * map(p + k.xxx * h));
 }
 
 float rayMatch(in vec3 ro, in vec3 rd) {
-  float t = TMIN;
-  for(int i = 0; i < RAYMARCH_TIME; i++) {
-    if(t >= TMAX)
+  float t = 0.1;
+  for(int i = 0; i < 100; i++) {
+    if(t >= TMAX) {
       break;
+    }
     vec3 p = ro + rd * t;
-    float d = sdfSphere(p);
-    if(d < PRECISION) {
+    float d = map(p);
+    if(d < 0.0001) {
       break;
     }
     t += d;
@@ -53,7 +56,7 @@ vec3 render(in vec2 uv) {
     vec3 light = vec3(2.0 * sin(iTime), 2.0, 2.0 * cos(iTime));
     float dif = clamp(dot(normalize(light - p), n), 0.0, 1.0);
     float amd = 0.5 + 0.5 * dot(n, vec3(0, 1, 0));
-    color = amd * (0.5 + 0.3 * cos(iTime + uv.yxx + vec3(0, 2, 4))) + dif * vec3(1);
+    color = amd * (0.5 + 0.4 * cos(iTime + uv.yxx + vec3(0, 2, 4))) + dif * vec3(1);
   }
   return sqrt(color);
 }
