@@ -6,6 +6,8 @@ uniform vec3 iResolution;
 uniform vec4 iMouse;
 uniform vec3 iScroll;
 
+out vec4 fragColor;
+
 vec2 toUV(in vec2 c) {
   return (2.0 * c - iResolution.xy) / min(iResolution.x, iResolution.y);
 }
@@ -56,7 +58,7 @@ vec3 render(in vec2 uv) {
     vec3 light = vec3(2.0 * sin(iTime), 2.0, 2.0 * cos(iTime));
     float dif = clamp(dot(normalize(light - p), n), 0.0, 1.0);
     float amd = 0.5 + 0.5 * dot(n, vec3(0, 1, 0));
-    color = amd * (0.5 + 0.4 * cos(iTime + uv.yxx + vec3(0, 2, 4))) + dif * vec3(1);
+    color = amd * (0.5 + 0.4 * cos(iTime + uv.yxx + vec3(0, 2, 4))) + dif * vec3(0.9);
   }
   return sqrt(color);
 }
@@ -74,5 +76,5 @@ void main() {
       color += mix(col, render(uv), smoothstep(TMAX + 0.001, TMAX, t));
     }
   }
-  gl_FragColor = vec4(color / float(AA * AA), 1.0);
+  fragColor = vec4(color / float(AA * AA), 1.0);
 }

@@ -16,7 +16,7 @@ function main() {
       body.appendChild(canvas)
 
       try {
-        const gl = canvas.getContext("webgl")
+        const gl = canvas.getContext("webgl2")
         if (gl) {
           window.addEventListener("resize", () => {
             canvas.width = window.innerWidth
@@ -49,7 +49,7 @@ function main() {
           }
           render(gl, pixelShaderSource)
         } else {
-          error("Your browser does not support WebGL.")
+          error("Your browser does not support WebGL2.")
         }
       } catch (err) {
         console.error(err)
@@ -105,15 +105,16 @@ function main() {
 
   const pixelShaderHeader = `
     #ifdef GL_ES
-      precision highp float;
-      precision highp int;
+    precision highp float;
+    precision highp int;
+    precision mediump sampler3D;
     #endif
   `
 
   function initShaderProgram(gl, pixelShaderSource) {
     const shaderProgram = gl.createProgram()
-    const vertexShader = compileShader(gl, gl.VERTEX_SHADER, "attribute vec2 pos;void main(){gl_Position=vec4(pos.xy,0.,1.);}")
-    const fragmentShader = compileShader(gl, gl.FRAGMENT_SHADER, `${pixelShaderHeader}${pixelShaderSource}`)
+    const vertexShader = compileShader(gl, gl.VERTEX_SHADER, "#version 300 es\nlayout(location = 0) in vec2 pos; void main() { gl_Position = vec4(pos.xy,0.,1.); }")
+    const fragmentShader = compileShader(gl, gl.FRAGMENT_SHADER, `#version 300 es${pixelShaderHeader}${pixelShaderSource}`)
 
     if (!fragmentShader) {
       return null
