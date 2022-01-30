@@ -1,62 +1,66 @@
-function main() {
+(() => {
+  const { body } = document
+  const loadingEl = el("div", "loading", "Loading...")
+
+  let currentShaderProgram = null
   let iMouse = new Float32Array([-1, -1, 0, 0])
   let iScroll = [0, 0, 0]
-  let currentShaderProgram = null
+  let currentFPS = -1
+  let fpsUpWait = null
 
-  window.addEventListener("load", () => {
-    const { body } = document
-    body.innerHTML = `<div class="loading">Loading...</div>`
+  Promise.all([
+    loadShader("world")
+  ]).then(([
+    pixelShaderSource
+  ]) => {
+    const canvas = document.querySelector("canvas")
 
-    loadShader("world").then(pixelShaderSource => {
-      const canvas = document.createElement("canvas")
+    canvas.width = window.innerWidth
+    canvas.height = window.innerHeight
+    loadingEl.remove()
 
-      canvas.width = window.innerWidth
-      canvas.height = window.innerHeight
-      body.childNodes.forEach(node => node.remove())
-      body.appendChild(canvas)
-
-      try {
-        const gl = canvas.getContext("webgl2")
-        if (gl) {
-          window.addEventListener("resize", () => {
-            canvas.width = window.innerWidth
-            canvas.height = window.innerHeight
-            gl.viewport(0, 0, canvas.clientWidth, canvas.clientHeight)
-          })
-          canvas.addEventListener("mousemove", e => {
-            iMouse[0] = e.clientX
-            iMouse[1] = window.innerHeight - e.clientY
-          })
-          canvas.addEventListener("mousedown", e => {
-            if (e.button === 2) {
-              iMouse[3] = 1  // right click 
-            } else {
-              iMouse[2] = 1
-            }
-          })
-          canvas.addEventListener("mouseup", () => {
-            iMouse[2] = iMouse[3] = 0
-          })
-          canvas.addEventListener("contextmenu", e => {
-            e.preventDefault()
-          })
-          body.addEventListener("wheel", e => {
-            iScroll[0] += e.deltaX
-            iScroll[1] += e.deltaY
-          })
-          if (window.IS_DEV) {
-            hot(gl)
+    try {
+      const gl = canvas.getContext("webgl2")
+      if (gl) {
+        gl.viewport(0, 0, canvas.clientWidth, canvas.clientHeight)
+        window.addEventListener("resize", () => {
+          canvas.width = window.innerWidth
+          canvas.height = window.innerHeight
+          gl.viewport(0, 0, canvas.clientWidth, canvas.clientHeight)
+        })
+        canvas.addEventListener("mousemove", e => {
+          iMouse[0] = e.clientX
+          iMouse[1] = window.innerHeight - e.clientY
+        })
+        canvas.addEventListener("mousedown", e => {
+          if (e.button === 2) {
+            iMouse[3] = 1  // right click 
+          } else {
+            iMouse[2] = 1
           }
-          render(gl, pixelShaderSource)
-        } else {
-          error("Your browser does not support WebGL2.")
+        })
+        canvas.addEventListener("mouseup", () => {
+          iMouse[2] = iMouse[3] = 0
+        })
+        canvas.addEventListener("contextmenu", e => {
+          e.preventDefault()
+        })
+        body.addEventListener("wheel", e => {
+          iScroll[0] += e.deltaX
+          iScroll[1] += e.deltaY
+        })
+        if (window.IS_DEV) {
+          hot(gl)
         }
-      } catch (err) {
-        console.error(err)
+        render(gl, pixelShaderSource)
+      } else {
+        error("Your browser does not support WebGL2.")
       }
-    }).catch(err => {
-      error(err.message)
-    })
+    } catch (err) {
+      console.error(err)
+    }
+  }).catch(err => {
+    error(err.message)
   })
 
   function render(gl, pixelShaderSource) {
@@ -107,13 +111,12 @@ function main() {
     #ifdef GL_ES
     precision highp float;
     precision highp int;
-    precision mediump sampler3D;
     #endif
   `
 
   function initShaderProgram(gl, pixelShaderSource) {
     const shaderProgram = gl.createProgram()
-    const vertexShader = compileShader(gl, gl.VERTEX_SHADER, "#version 300 es\nlayout(location = 0) in vec2 pos; void main() { gl_Position = vec4(pos.xy,0.,1.); }")
+    const vertexShader = compileShader(gl, gl.VERTEX_SHADER, "#version 300 es\nlayout(location = 0) in vec2 pos;\nvoid main() { gl_Position = vec4(pos.xy,0.,1.); }")
     const fragmentShader = compileShader(gl, gl.FRAGMENT_SHADER, `#version 300 es${pixelShaderHeader}${pixelShaderSource}`)
 
     if (!fragmentShader) {
@@ -168,32 +171,32 @@ function main() {
   }
 
   function updateFPS(fps) {
-    const firstUp = typeof window._fpsUpWait === "undefined"
-    window._fps = fps
-    if (window._fpsUpWait) {
+    const firstUp = fpsUpWait === null
+    currentFPS = fps
+    if (fpsUpWait) {
       return
     }
-    window._fpsUpWait = true
+    fpsUpWait = true
     setTimeout(() => {
-      let fpsEl = window.fpsEl
-      if (!fpsEl) {
-        fpsEl = window.fpsEl = document.createElement("div")
-        fpsEl.className = "fps"
-        document.body.appendChild(fpsEl)
-      }
-      fpsEl.innerText = window._fps.toString()
-      window._fpsUpWait = false
+      const e = document.querySelector(".fps") || el("div", "fps")
+      e.innerHTML = currentFPS.toString()
+      fpsUpWait = false
     }, firstUp ? 100 : 1000)
   }
 
-  function error(message) {
-    let div = document.querySelector(".error")
-    if (!div) {
-      div = document.createElement("div")
-      div.className = "error"
-      document.body.appendChild(div)
+  function el(name, className, innerHTML) {
+    const e = document.createElement(name)
+    e.className = className
+    if (innerHTML) {
+      e.innerHTML = innerHTML
     }
-    div.innerHTML = `<div class="wrapper">${message}</div>`
+    body.appendChild(e)
+    return e
+  }
+
+  function error(message) {
+    const e = document.querySelector(".error") || el("div", "error")
+    e.innerHTML = `<div class="wrapper">${message}</div>`
   }
 
   function now() {
@@ -209,6 +212,4 @@ function main() {
       return res.text()
     })
   }
-}
-
-main()
+})()
