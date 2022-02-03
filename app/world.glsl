@@ -22,7 +22,7 @@ vec2 minX(in vec2 a, in vec2 b) {
 }
 
 vec2 map(in vec3 p) {
-  vec2 d = vec2(sdBox(p - vec3(0, 0, -0.1), vec3(0.2)), 1.0);
+  vec2 d = vec2(sdBox(p - vec3(0, 0, -0.08), vec3(0.16)), 1.0);
   return d;
 }
 
