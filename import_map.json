@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "aleph/": "https://deno.land/x/aleph_canary@0.0.3/",
+    "aleph/server": "https://deno.land/x/aleph_canary@0.0.3/server/mod.ts"
+  }
+}
