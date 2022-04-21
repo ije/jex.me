@@ -48,9 +48,6 @@ Promise.all([
         iScroll[0] += e.deltaX;
         iScroll[1] += e.deltaY;
       });
-      if (window.IS_DEV) {
-        hot(gl);
-      }
       render(gl, pixelShaderSource);
     } else {
       error("Your browser does not support WebGL2.");
@@ -179,25 +176,6 @@ function compileShader(gl, type, source) {
   return shader;
 }
 
-function hot(gl) {
-  const socket = new WebSocket("ws://localhost:8000/dev-socket");
-  socket.addEventListener("open", () => {
-    socket.send("READY");
-  });
-  socket.addEventListener("message", (e) => {
-    switch (e.data) {
-      case "RELOAD":
-        window.location.reload();
-        break;
-      case "REDRAW":
-        loadShader("world", true).then((pixelShaderSource) => {
-          document.querySelector(".error")?.remove();
-          render(gl, pixelShaderSource);
-        });
-    }
-  });
-}
-
 function updateFPS(fps) {
   const firstUp = fpsUpWait === null;
   currentFPS = fps;
@@ -244,3 +222,5 @@ function loadShader(name, noCache = false) {
     return res.text();
   });
 }
+
+import.meta.hot?.decline();

@@ -1,3 +1,5 @@
-import { serve } from "https://deno.land/x/aleph_canary@0.0.51/server/mod.ts";
+import { serve } from "https://deno.land/x/aleph@1.0.0-alpha.4/server/mod.ts";
 
-serve();
+serve({
+  port: 8000,
+});
